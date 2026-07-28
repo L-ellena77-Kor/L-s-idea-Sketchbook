@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>발명 기록장</title>
+<meta name="theme-color" content="#0A0D1C" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --bg: #0A0D1C;
+    --panel: rgba(18, 23, 44, 0.72);
+    --line: rgba(140, 150, 220, 0.18);
+    --text: #EDEDF6;
+    --dim: #9AA0C3;
+    --spark: #FFC24D;
+    --particle: #7C89F5;
+    --danger: #F27C7C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    min-height: 100vh;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea { font-family: inherit; }
+  input:focus, textarea:focus { border-color: rgba(255, 194, 77, 0.5) !important; }
+
+  #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 40px 16px 90px; }
+
+  .eyebrow { color: var(--spark); letter-spacing: 0.25em; font-size: 11px; font-weight: 600; }
+  h1 { font-size: 34px; font-weight: 800; line-height: 1.2; margin-top: 6px; }
+  .sub { color: var(--dim); margin-top: 8px; font-size: 14px; }
+  .sub b { color: var(--spark); font-weight: 700; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-top: 28px;
+  }
+  .row { display: flex; gap: 8px; }
+  .field {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    width: 100%;
+  }
+  textarea.field { resize: vertical; line-height: 1.6; margin-top: 8px; }
+  .chip {
+    font-size: 12px; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--dim); background: transparent;
+  }
+  .chip.on { font-weight: 700; }
+  .btn-mic {
+    border: 1px solid var(--line); background: rgba(255,255,255,0.05);
+    font-size: 18px; padding: 0 14px; border-radius: 10px; flex-shrink: 0;
+  }
+  .btn-gold {
+    background: var(--spark); color: #141930; font-weight: 800;
+    font-size: 14px; padding: 10px 22px; border-radius: 10px; flex-shrink: 0;
+  }
+  .btn-ghost {
+    border: 1px solid var(--line); color: var(--dim);
+    font-size: 12px; padding: 8px 12px; border-radius: 10px; flex-shrink: 0;
+  }
+  .btn-ghost.sketch-on { border-color: var(--spark); color: var(--spark); background: rgba(255,194,77,0.1); }
+
+  .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 30px 0 14px; }
+  .search {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 16px; color: var(--text);
+    font-size: 13px; outline: none; flex: 1; min-width: 180px; max-width: 320px;
+  }
+  .search.active { border-color: var(--spark); }
+  #syncPill {
+    font-size: 11px; color: var(--dim); padding: 5px 10px;
+    border: 1px solid var(--line); border-radius: 999px; white-space: nowrap;
+  }
+  #syncPill.ok { color: #5FD0A5; border-color: rgba(95,208,165,0.4); }
+  #syncPill.busy { color: var(--spark); border-color: rgba(255,194,77,0.4); }
+  #syncPill.err { color: var(--danger); border-color: rgba(242,124,124,0.4); cursor: pointer; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .card.starred { border-color: rgba(255,194,77,0.5); box-shadow: 0 0 18px rgba(255,194,77,0.12); }
+  .card .top { display: flex; align-items: flex-start; gap: 8px; }
+  .card .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .badge { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+  .date { color: var(--dim); font-size: 11px; }
+  .card h2 { font-size: 17px; font-weight: 700; margin-top: 8px; word-break: keep-all; }
+  .card p.body { color: #C8CCE6; font-size: 14px; margin-top: 6px; white-space: pre-wrap; line-height: 1.6; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tags span { color: var(--dim); font-size: 11px; }
+  mark { background: rgba(255,194,77,0.4); color: #141930; border-radius: 3px; padding: 0 2px; }
+  .card img.sketch { margin-top: 10px; border-radius: 10px; max-width: 320px; width: 100%; border: 1px solid var(--line); display: block; }
+  .card .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .act { font-size: 12px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); color: var(--dim); }
+  .act.prior { border-color: rgba(255,194,77,0.4); color: var(--spark); background: rgba(255,194,77,0.08); font-weight: 600; }
+  .side { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+  .star-btn { font-size: 19px; padding: 2px 8px; filter: grayscale(1); opacity: 0.45; transition: all 0.15s; }
+  .star-btn.on { filter: none; opacity: 1; }
+  .mini { font-size: 12px; color: var(--dim); padding: 3px 8px; border-radius: 6px; }
+  .mini.danger { color: var(--danger); opacity: 0.75; }
+
+  .edit-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .edit-form .field { font-size: 15px; padding: 8px 12px; }
+
+  .prior-links { display: none; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 12px; border-radius: 10px; background: rgba(255,194,77,0.06); border: 1px solid rgba(255,194,77,0.25); }
+  .prior-links.open { display: flex; }
+  .prior-links a, .prior-links button {
+    font-size: 12px; padding: 7px 12px; border-radius: 8px; text-decoration: none;
+    border: 1px solid rgba(255,194,77,0.35); color: var(--spark); background: rgba(255,194,77,0.05);
+  }
+  .prior-links .ai-analyze { background: var(--spark); color: #141930; border: none; font-weight: 700; }
+  .prior-links .ai-analyze:disabled { opacity: 0.6; cursor: wait; }
+
+  .empty { text-align: center; margin-top: 60px; color: var(--dim); }
+  .empty p:first-child { font-size: 15px; }
+  .empty p:last-child { font-size: 13px; margin-top: 4px; }
+
+  /* 모달 공통 */
+  .modal-bg {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(6,8,18,0.8); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #141930; border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px; width: 100%; max-height: 92vh; overflow-y: auto;
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .modal-head b { font-weight: 600; }
+  .close-btn { color: var(--dim); font-size: 13px; padding: 4px 8px; }
+
+  /* 스케치 */
+  #sketchModal .modal { max-width: 700px; }
+  #sketchCanvas { width: 100%; border-radius: 10px; touch-action: none; cursor: crosshair; display: block; }
+  .sk-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; }
+  .swatch.on { border-color: #fff; }
+
+  /* 음성 */
+  #voiceModal .modal { max-width: 620px; }
+  .live-box {
+    min-height: 120px; max-height: 240px; overflow-y: auto;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 14px; font-size: 15px; line-height: 1.7;
+  }
+  .live-box .interim { color: var(--dim); }
+  .rec-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); display: inline-block; animation: vpulse 1.2s ease-in-out infinite; }
+  @keyframes vpulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+  @media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }
+
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1D2340; border: 1px solid var(--line); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; font-size: 13px; z-index: 60;
+    display: none; max-width: 90vw; text-align: center;
+  }
+
+  /* PIN 잠금화면 — 비밀번호는 이 기기에만 저장되고 저장소 코드엔 없습니다 */
+  #lockScreen {
+    position: fixed; inset: 0; z-index: 100; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  #lockScreen.hidden { display: none; }
+  .lock-box { max-width: 360px; width: 100%; text-align: center; }
+  .lock-box .eyebrow { display: block; margin-bottom: 6px; }
+  .lock-box h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .lock-box p { color: var(--dim); font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
+  .lock-box input {
+    width: 100%; text-align: center; letter-spacing: 0.1em; font-size: 16px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px; color: var(--text); outline: none;
+  }
+  .lock-box button {
+    width: 100%; margin-top: 10px; background: var(--spark); color: #141930;
+    font-weight: 800; padding: 12px; border-radius: 10px; font-size: 14px;
+  }
+  .lock-box .hint { margin-top: 14px; font-size: 11px; color: var(--dim); opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div class="lock-box">
+    <span class="eyebrow" style="color:var(--spark);letter-spacing:.25em;font-size:11px;font-weight:600;">INVENTION LOG</span>
+    <h2>🔒 이 기기 잠금 해제</h2>
+    <p id="lockDesc">이 기기에서 처음 여시는군요. 시트 설정 때 정한 비밀번호를 입력하면, 그 값은 이 기기의 브라우저에만 저장되고 앞으로는 다시 묻지 않아요.</p>
+    <input id="pinInput" type="password" placeholder="비밀번호" autocomplete="off" />
+    <button id="pinSubmit">잠금 해제</button>
+    <p class="hint" id="pinError" style="display:none;color:var(--danger);"></p>
+    <p class="hint">비밀번호를 처음 정하는 경우라면, 여기서 입력한 값이 곧 새 비밀번호가 됩니다. 설치가이드의 안내를 먼저 확인하세요.</p>
+  </div>
+</div>
+
+<canvas id="particles" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header style="position: relative;">
+    <p class="eyebrow">INVENTION LOG</p>
+    <h1>발명 기록장</h1>
+    <p class="sub">떠오른 순간, 사라지기 전에. 지금까지 붙잡은 발상 <b id="countEl">0</b>개가 배경의 별로 빛나고 있어요.</p>
+    <button id="soundBtn" title="음성 인사 켜기/끄기" aria-label="음성 인사 켜기/끄기"
+      style="position: absolute; top: 0; right: 0; font-size: 20px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05);">🔊</button>
+    <button id="changePinBtn" title="이 기기 비밀번호 변경"
+      style="position: absolute; top: 0; right: 46px; font-size: 15px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05); color: var(--dim);">🔒</button>
+  </header>
+
+  <!-- 기록: 제목 먼저, 상세는 그다음 -->
+  <section class="panel" aria-label="아이디어 기록">
+    <div class="row">
+      <input id="titleInput" class="field" placeholder="① 제목 — 아이디어에 이름을 붙여 보세요 (Enter로 상세 입력으로)" />
+      <button class="btn-mic" id="micBtn" title="말로 기록하기" aria-label="말로 기록하기">🎤</button>
+    </div>
+    <textarea id="bodyInput" class="field" rows="3"
+      placeholder="② 상세 내용 — 어떤 원리인지, 어떤 불편을 해결하는지, 어떻게 만들 수 있을지… (Ctrl+Enter로 저장)"></textarea>
+    <div class="filters" style="margin: 10px 0 0;" id="catRow"></div>
+    <div class="row" style="margin-top: 10px; flex-wrap: wrap;">
+      <input id="tagsInput" class="field" style="flex: 1; min-width: 140px; font-size: 13px; padding: 9px 14px;" placeholder="태그 (쉼표·공백 구분)" />
+      <button class="btn-ghost" id="sketchBtn">✏️ 구상도 그리기 (선택)</button>
+      <button class="btn-gold" id="saveBtn">기록</button>
+    </div>
+  </section>
+
+  <!-- 필터 + 검색 + 동기화 상태 -->
+  <div class="filters" id="filterRow" style="display: none;">
+    <button class="chip" data-filter="all">전체</button>
+    <button class="chip" data-filter="starred">⭐ 별표</button>
+    <span id="catFilters" style="display: contents;"></span>
+    <input id="searchInput" class="search" placeholder="🔍 키워드로 내 아이디어 검색 (제목·내용·태그)" />
+    <span id="syncPill">준비 중</span>
+  </div>
+
+  <div id="list"></div>
+  <div class="empty" id="emptyMsg">
+    <p>아직 별이 없어요.</p>
+    <p>위 입력창에 첫 아이디어를 적어 첫 별을 띄워 보세요.</p>
+  </div>
+</div>
+
+<!-- 스케치 모달 -->
+<div class="modal-bg" id="sketchModal" role="dialog" aria-label="아이디어 구상도">
+  <div class="modal">
+    <div class="modal-head"><b>아이디어 구상도</b><button class="close-btn" id="sketchClose">닫기</button></div>
+    <canvas id="sketchCanvas" width="640" height="420"></canvas>
+    <div class="sk-tools">
+      <span id="swatches" style="display: contents;"></span>
+      <button class="btn-ghost" id="eraserBtn" style="padding: 5px 10px;">지우개</button>
+      <label style="font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px;">
+        굵기 <input type="range" id="penSize" min="1" max="10" value="3" />
+      </label>
+      <span style="flex: 1;"></span>
+      <button class="btn-ghost" id="clearSketch" style="color: var(--danger); border-color: rgba(242,124,124,0.35);">전체 지우기</button>
+      <button class="btn-gold" id="saveSketch" style="padding: 8px 16px;">구상도 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 음성 모달 -->
+<div class="modal-bg" id="voiceModal" role="dialog" aria-label="말로 기록하기">
+  <div class="modal">
+    <div class="modal-head"><b>🎤 말로 기록하기</b><button class="close-btn" id="voiceClose">닫기</button></div>
+    <div id="voiceUnsupported" style="display: none; color: var(--dim); font-size: 14px; line-height: 1.7;">
+      이 브라우저는 음성 인식을 지원하지 않아요. Chrome(또는 Edge, 삼성 인터넷)에서 열면 사용할 수 있습니다.
+    </div>
+    <div id="voiceBody">
+      <div class="filters" style="margin: 0 0 12px;">
+        <span style="font-size: 12px; color: var(--dim);">녹음 시간</span>
+        <span id="durChips" style="display: contents;"></span>
+      </div>
+      <div class="row" style="align-items: center; margin-bottom: 12px;">
+        <button class="btn-gold" id="recBtn">녹음 시작</button>
+        <span id="recStatus" style="display: none; color: var(--danger); font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
+          <span class="rec-dot"></span><span id="recTime">00:00</span>
+        </span>
+      </div>
+      <div class="live-box" id="liveBox" aria-live="polite" style="display: none;">
+        <span id="liveFinal"></span> <span class="interim" id="liveInterim"></span>
+        <span id="livePlaceholder" style="color: var(--dim);">말씀하시면 여기에 실시간으로 받아써요…</span>
+      </div>
+      <textarea id="voiceText" class="field" rows="6" style="display: none; margin-top: 0;"
+        placeholder="녹음을 시작하면 받아쓴 내용이 여기 담기고, 직접 고칠 수도 있어요."></textarea>
+      <div class="row" id="voiceActs" style="margin-top: 12px; display: none;">
+        <span style="flex: 1;"></span>
+        <button class="btn-gold" id="insertVoice">기록장에 넣기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+/* ═══════════════ ① 설정 — 설치가이드.md를 따라 두 값을 채우세요 ═══════════════ */
+const CONFIG = {
+      SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzVbum4DhE2-yOH5n6dFN4rZRK6w1ozEHB6r8Q_XgZwUcHqvECR_aEYllGcJbYDeSwklA/exec
+",
+      USER_NAME: "엘레나",
+    };
+// ※ 비밀번호(PIN)는 이 파일에 절대 적지 않습니다.
+// 앱을 처음 여는 기기에서 직접 입력하고, 그 기기의 브라우저 안에만 저장됩니다.
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+const CATEGORIES = [
+  { id: "science", label: "과학·실험", color: "#7C89F5" },
+  { id: "life", label: "실생활", color: "#5FD0A5" },
+  { id: "app", label: "앱·SW", color: "#FFC24D" },
+  { id: "etc", label: "기타", color: "#B58CF2" },
+];
+const catOf = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[3];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const now = () => Date.now();
+const fmtDate = (ts) => {
+  const d = new Date(ts);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/* ─── 상태 ─── */
+let ideas = [];            // 삭제 기록(tombstone) 포함 전체
+let filter = "all";
+let query = "";
+let selectedCat = "science";
+let pendingSketch = "";    // 새 기록에 첨부 대기 중인 구상도
+let sketchTarget = null;   // "new" | idea id
+let editingId = null;
+let PIN_HASH = "";         // 이 기기에서 입력한 PIN의 해시값 (원문은 저장하지 않음)
+
+/* ─── 로컬 저장 ─── */
+function loadLocal() {
+  try { ideas = JSON.parse(localStorage.getItem("inv-ideas") || "[]"); }
+  catch (e) { ideas = []; }
+}
+function saveLocal() {
+  try { localStorage.setItem("inv-ideas", JSON.stringify(ideas)); }
+  catch (e) { toast("기기 저장 공간이 가득 찼어요."); }
+}
+
+/* ─── 동기화 (로컬 우선: 화면은 즉시, 시트 전송은 뒤에서) ─── */
+let syncTimer = null, syncing = false, syncQueued = false;
+const pill = document.getElementById("syncPill");
+
+function setPill(cls, text, clickable) {
+  pill.className = cls || "";
+  pill.textContent = text;
+  pill.style.cursor = clickable ? "pointer" : "default";
+}
+function scheduleSync() {
+  if (!CONFIG.SCRIPT_URL) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncNow, 1200);
+}
+async function syncNow() {
+  if (!CONFIG.SCRIPT_URL) { setPill("", "시트 미연결 · 이 기기에만 저장 중"); return; }
+  if (syncing) { syncQueued = true; return; }
+  if (!navigator.onLine) { setPill("err", "오프라인 — 연결되면 자동 전송"); return; }
+  syncing = true;
+  setPill("busy", "동기화 중…");
+  try {
+    const res = await fetch(CONFIG.SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ token: PIN_HASH, ideas }),
+    });
+    const data = await res.json();
+    if (data.error === "unauthorized") {
+      localStorage.removeItem("inv-pin-hash");
+      showLock("비밀번호가 맞지 않아요. 다시 입력해 주세요.");
+      throw new Error("unauthorized");
+    }
+    if (data.error) throw new Error(data.error);
+    // 서버 병합 결과와 로컬을 다시 병합 (전송 중 새로 적은 기록 보호)
+    const map = {};
+    (data.ideas || []).forEach((r) => { map[r.id] = r; });
+    ideas.forEach((r) => {
+      const ex = map[r.id];
+      if (!ex || Number(r.updatedAt || 0) > Number(ex.updatedAt || 0)) map[r.id] = r;
+    });
+    ideas = Object.values(map).sort((a, b) => b.createdAt - a.createdAt);
+    saveLocal();
+    render();
+    const t = new Date();
+    setPill("ok", `✓ 동기화됨 ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`);
+  } catch (e) {
+    setPill("err", "동기화 실패 — 눌러서 다시 시도", true);
+  } finally {
+    syncing = false;
+    if (syncQueued) { syncQueued = false; syncNow(); }
+  }
+}
+pill.addEventListener("click", () => { if (pill.classList.contains("err")) syncNow(); });
+window.addEventListener("online", syncNow);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") syncNow(); // 다른 기기에서 적은 기록 가져오기
+});
+
+/* ─── 기록/수정/삭제/별표 ─── */
+const titleInput = document.getElementById("titleInput");
+const bodyInput = document.getElementById("bodyInput");
+const tagsInput = document.getElementById("tagsInput");
+
+function parseTags(s) { return s.split(/[,\s]+/).map((t) => t.trim()).filter(Boolean); }
+
+function saveIdea() {
+  const t = titleInput.value.trim();
+  if (!t) { titleInput.focus(); return; }
+  const idea = {
+    id: uid(), title: t, body: bodyInput.value.trim(),
+    category: selectedCat, tags: parseTags(tagsInput.value),
+    starred: false, createdAt: now(), updatedAt: now(),
+    deleted: false, sketch: pendingSketch || "",
+  };
+  ideas.unshift(idea);
+  saveLocal(); render(); scheduleSync();
+  burstAt(document.getElementById("saveBtn"));
+  titleInput.value = ""; bodyInput.value = ""; tagsInput.value = "";
+  pendingSketch = "";
+  refreshSketchBtn();
+  titleInput.focus();
+}
+function touch(idea) { idea.updatedAt = now(); saveLocal(); render(); scheduleSync(); }
+function toggleStar(id) {
+  const i = ideas.find((x) => x.id === id); if (!i) return;
+  i.starred = !i.starred; touch(i);
+}
+function removeIdea(id) {
+  const i = ideas.find((x) => x.id === id); if (!i) return;
+  i.deleted = true; touch(i);
+}
+function beginEdit(id) { editingId = id; render(); }
+function saveEdit(id) {
+  const i = ideas.find((x) => x.id === id); if (!i) return;
+  const t = document.getElementById("editTitle").value.trim();
+  if (!t) return;
+  i.title = t;
+  i.body = document.getElementById("editBody").value.trim();
+  i.tags = parseTags(document.getElementById("editTags").value);
+  editingId = null;
+  touch(i);
+}
+
+/* ─── 선행조사 링크 (API 없이 원문 검색) ─── */
+function priorQuery(idea) {
+  return [idea.title.replace(/…$/, ""), ...(idea.tags || []).slice(0, 2)].join(" ").trim();
+}
+async function copyForKipris(id) {
+  const i = ideas.find((x) => x.id === id); if (!i) return;
+  const q = priorQuery(i);
+  try { await navigator.clipboard.writeText(q); toast(`"${q}" 복사됨 — KIPRIS 검색창에 붙여넣으세요.`); }
+  catch (e) { toast("복사에 실패했어요. 검색어를 직접 입력해 주세요."); }
+  window.open("https://www.kipris.or.kr", "_blank");
+}
+
+/* ─── 렌더링 ─── */
+const listEl = document.getElementById("list");
+const emptyMsg = document.getElementById("emptyMsg");
+const filterRow = document.getElementById("filterRow");
+
+function highlight(text) {
+  const safe = esc(text);
+  const q = query.trim();
+  if (!q) return safe;
+  const eq = esc(q).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return safe.replace(new RegExp(`(${eq})`, "gi"), "<mark>$1</mark>");
+}
+
+function render() {
+  const alive = ideas.filter((i) => !i.deleted);
+  document.getElementById("countEl").textContent = alive.length;
+  window.__starCount = alive.length; // 파티클 별 개수
+  filterRow.style.display = alive.length ? "flex" : "none";
+  emptyMsg.style.display = alive.length ? "none" : "block";
+
+  // 필터 칩 갱신
+  document.querySelectorAll("#filterRow .chip").forEach((b) => {
+    const f = b.dataset.filter;
+    const on = f === filter;
+    b.classList.toggle("on", on);
+    if (f === "all") {
+      b.textContent = `전체 ${alive.length}`;
+      b.style.borderColor = on ? "var(--text)" : "var(--line)";
+      b.style.color = on ? "var(--text)" : "var(--dim)";
+    } else if (f === "starred") {
+      b.textContent = `⭐ 별표 ${alive.filter((i) => i.starred).length}`;
+      b.style.borderColor = on ? "var(--spark)" : "var(--line)";
+      b.style.color = on ? "var(--spark)" : "var(--dim)";
+      b.style.background = on ? "rgba(255,194,77,0.1)" : "transparent";
+    } else {
+      const c = catOf(f);
+      b.textContent = `${c.label} ${alive.filter((i) => i.category === f).length}`;
+      b.style.borderColor = on ? c.color : "var(--line)";
+      b.style.color = on ? c.color : "var(--dim)";
+    }
+  });
+
+  const q = query.trim().toLowerCase();
+  const visible = alive.filter((i) => {
+    if (filter === "starred" && !i.starred) return false;
+    if (filter !== "all" && filter !== "starred" && i.category !== filter) return false;
+    if (q) {
+      const hay = `${i.title} ${i.body} ${(i.tags || []).join(" ")}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  listEl.innerHTML = visible.map((idea) => {
+    const c = catOf(idea.category);
+    if (editingId === idea.id) {
+      return `<article class="card${idea.starred ? " starred" : ""}">
+        <div class="meta">
+          <span class="badge" style="color:${c.color};background:${c.color}18;border:1px solid ${c.color}55;">${c.label}</span>
+          <span class="date">${fmtDate(idea.createdAt)}</span>
+        </div>
+        <div class="edit-form">
+          <input id="editTitle" class="field" value="${esc(idea.title)}" style="font-weight:700;" />
+          <textarea id="editBody" class="field" rows="4" style="margin-top:0;">${esc(idea.body)}</textarea>
+          <input id="editTags" class="field" value="${esc((idea.tags || []).join(", "))}" placeholder="태그" style="font-size:13px;" />
+          <div class="row">
+            <button class="btn-gold" style="padding:7px 16px;font-size:12px;" onclick="saveEdit('${idea.id}')">수정 저장</button>
+            <button class="btn-ghost" onclick="editingId=null;render();">취소</button>
+          </div>
+        </div>
+      </article>`;
+    }
+    return `<article class="card${idea.starred ? " starred" : ""}">
+      <div class="top">
+        <div style="flex:1;min-width:0;">
+          <div class="meta">
+            <span class="badge" style="color:${c.color};background:${c.color}18;border:1px solid ${c.color}55;">${c.label}</span>
+            <span class="date">${fmtDate(idea.createdAt)}</span>
+          </div>
+          <h2>${highlight(idea.title)}</h2>
+          ${idea.body ? `<p class="body">${highlight(idea.body)}</p>` : ""}
+          ${(idea.tags || []).length ? `<div class="tags">${idea.tags.map((t) => `<span>#${highlight(t)}</span>`).join("")}</div>` : ""}
+          ${idea.sketch ? `<img class="sketch" src="${idea.sketch}" alt="아이디어 구상도" />` : ""}
+        </div>
+        <div class="side">
+          <button class="star-btn${idea.starred ? " on" : ""}" title="${idea.starred ? "별표 해제" : "좋은 아이디어에 별표"}" onclick="toggleStar('${idea.id}')">⭐</button>
+          <button class="mini" onclick="beginEdit('${idea.id}')">수정</button>
+          <button class="mini danger" onclick="if(confirm('이 기록을 삭제할까요?'))removeIdea('${idea.id}')">삭제</button>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="act" onclick="openSketch('${idea.id}')">✏️ ${idea.sketch ? "구상도 수정" : "구상도 추가"}</button>
+        <button class="act prior" onclick="togglePrior('${idea.id}')">🔭 유사 아이디어 찾아보기</button>
+      </div>
+      <div class="prior-links" id="prior-${idea.id}">
+        <button class="ai-analyze" onclick="analyzeIdea('${idea.id}', this)">🤖 AI ${idea.analysis ? "차별점 다시 분석" : "유사 사례 + 차별점 분석"}</button>
+        <a href="https://patents.google.com/?q=${encodeURIComponent(priorQuery(idea))}" target="_blank" rel="noopener">📜 Google 특허 (한국 특허 포함)</a>
+        <a href="https://search.shopping.naver.com/search/all?query=${encodeURIComponent(priorQuery(idea))}" target="_blank" rel="noopener">🛒 네이버쇼핑 제품 검색</a>
+        <a href="https://search.naver.com/search.naver?query=${encodeURIComponent(priorQuery(idea))}" target="_blank" rel="noopener">🔎 네이버 통합검색</a>
+        <button onclick="copyForKipris('${idea.id}')">🏛 KIPRIS 특허검색 (검색어 복사 후 이동)</button>
+      </div>
+      ${idea.analysis ? `<div style="margin-top:10px;border-radius:10px;padding:12px 14px;background:rgba(255,194,77,0.06);border:1px solid rgba(255,194,77,0.25);">
+        <p style="color:var(--spark);font-size:11px;font-weight:700;letter-spacing:0.1em;margin-bottom:6px;">AI 선행 조사${idea.analyzedAt ? " · " + fmtDate(idea.analyzedAt) : ""}</p>
+        <p style="color:#E4E0D0;font-size:13px;white-space:pre-wrap;line-height:1.6;">${highlight(idea.analysis)}</p>
+      </div>` : ""}
+    </article>`;
+  }).join("");
+
+  if (alive.length && !visible.length) {
+    listEl.innerHTML = `<p style="text-align:center;margin-top:40px;color:var(--dim);font-size:13px;">조건에 맞는 기록이 없어요. 필터나 검색어를 바꿔 보세요.</p>`;
+  }
+}
+function togglePrior(id) {
+  document.getElementById(`prior-${id}`).classList.toggle("open");
+}
+
+/* ─── 입력 이벤트 ─── */
+titleInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); bodyInput.focus(); }
+});
+bodyInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveIdea();
+});
+document.getElementById("saveBtn").addEventListener("click", saveIdea);
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  query = e.target.value;
+  e.target.classList.toggle("active", !!query.trim());
+  render();
+});
+
+/* 분류 칩 (입력용 + 필터용) */
+const catRow = document.getElementById("catRow");
+CATEGORIES.forEach((c) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = c.label;
+  b.onclick = () => {
+    selectedCat = c.id;
+    catRow.querySelectorAll(".chip").forEach((x, i) => {
+      const cc = CATEGORIES[i], on = cc.id === selectedCat;
+      x.classList.toggle("on", on);
+      x.style.borderColor = on ? cc.color : "var(--line)";
+      x.style.color = on ? cc.color : "var(--dim)";
+      x.style.background = on ? cc.color + "18" : "transparent";
+    });
+  };
+  catRow.appendChild(b);
+});
+catRow.querySelector(".chip").click();
+
+const catFilters = document.getElementById("catFilters");
+CATEGORIES.forEach((c) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.dataset.filter = c.id; b.textContent = c.label;
+  catFilters.appendChild(b);
+});
+document.querySelectorAll("#filterRow .chip").forEach((b) => {
+  b.addEventListener("click", () => { filter = b.dataset.filter; render(); });
+});
+
+/* ─── 스케치 ─── */
+const sketchModal = document.getElementById("sketchModal");
+const sc = document.getElementById("sketchCanvas");
+const sctx = sc.getContext("2d");
+let penColor = "#1B2145", penSize = 3, erasing = false, drawing = false, lastPt = null;
+const SK_COLORS = ["#1B2145", "#D9534F", "#2E86AB", "#3E9B6B", "#E8A33D", "#8C5BC2"];
+const swatches = document.getElementById("swatches");
+SK_COLORS.forEach((col, i) => {
+  const b = document.createElement("button");
+  b.className = "swatch" + (i === 0 ? " on" : "");
+  b.style.background = col;
+  b.setAttribute("aria-label", "색 " + col);
+  b.onclick = () => {
+    penColor = col; erasing = false;
+    swatches.querySelectorAll(".swatch").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    document.getElementById("eraserBtn").classList.remove("sketch-on");
+  };
+  swatches.appendChild(b);
+});
+document.getElementById("eraserBtn").onclick = function () {
+  erasing = !erasing;
+  this.classList.toggle("sketch-on", erasing);
+};
+document.getElementById("penSize").oninput = (e) => { penSize = +e.target.value; };
+document.getElementById("clearSketch").onclick = () => {
+  sctx.fillStyle = "#FAF8F2"; sctx.fillRect(0, 0, sc.width, sc.height);
+};
+function skPos(e) {
+  const r = sc.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * (sc.width / r.width), y: (e.clientY - r.top) * (sc.height / r.height) };
+}
+sc.addEventListener("pointerdown", (e) => { e.preventDefault(); drawing = true; lastPt = skPos(e); sc.setPointerCapture(e.pointerId); });
+sc.addEventListener("pointermove", (e) => {
+  if (!drawing) return;
+  const p = skPos(e);
+  sctx.strokeStyle = erasing ? "#FAF8F2" : penColor;
+  sctx.lineWidth = erasing ? penSize * 5 : penSize;
+  sctx.lineCap = "round"; sctx.lineJoin = "round";
+  sctx.beginPath(); sctx.moveTo(lastPt.x, lastPt.y); sctx.lineTo(p.x, p.y); sctx.stroke();
+  lastPt = p;
+});
+sc.addEventListener("pointerup", () => { drawing = false; });
+
+function openSketch(target) {
+  sketchTarget = target;
+  sctx.fillStyle = "#FAF8F2"; sctx.fillRect(0, 0, sc.width, sc.height);
+  const existing = target === "new" ? pendingSketch : (ideas.find((i) => i.id === target) || {}).sketch;
+  if (existing) {
+    const img = new Image();
+    img.onload = () => sctx.drawImage(img, 0, 0, sc.width, sc.height);
+    img.src = existing;
+  }
+  sketchModal.classList.add("open");
+}
+document.getElementById("sketchBtn").onclick = () => openSketch("new");
+document.getElementById("sketchClose").onclick = () => sketchModal.classList.remove("open");
+document.getElementById("saveSketch").onclick = () => {
+  // 시트 셀 용량(5만 자) 안에 들도록 압축
+  let w = 480, q = 0.8, url = "";
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const small = document.createElement("canvas");
+    small.width = w; small.height = Math.round(w * 420 / 640);
+    small.getContext("2d").drawImage(sc, 0, 0, small.width, small.height);
+    url = small.toDataURL("image/jpeg", q);
+    if (url.length <= 45000) break;
+    if (q > 0.4) q -= 0.15; else w = Math.round(w * 0.8);
+  }
+  if (sketchTarget === "new") {
+    pendingSketch = url;
+    refreshSketchBtn();
+  } else {
+    const i = ideas.find((x) => x.id === sketchTarget);
+    if (i) { i.sketch = url; touch(i); }
+  }
+  sketchModal.classList.remove("open");
+};
+function refreshSketchBtn() {
+  const b = document.getElementById("sketchBtn");
+  b.textContent = pendingSketch ? "✏️ 구상도 첨부됨" : "✏️ 구상도 그리기 (선택)";
+  b.classList.toggle("sketch-on", !!pendingSketch);
+}
+
+/* ─── 음성 기록 ───
+   브라우저 음성 인식은 몇 초 침묵하면 스스로 끊기므로,
+   정해둔 시간(또는 무제한) 동안 끊길 때마다 자동 재시작해서 길게 받아쓴다. */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceModal = document.getElementById("voiceModal");
+let rec = null, keepListening = false, recTimer = null, recSec = 0, maxMin = 0, finalText = "";
+
+const DURATIONS = [
+  { min: 0, label: "제한 없음" }, { min: 1, label: "1분" },
+  { min: 3, label: "3분" }, { min: 5, label: "5분" }, { min: 10, label: "10분" },
+];
+const durChips = document.getElementById("durChips");
+DURATIONS.forEach((d, i) => {
+  const b = document.createElement("button");
+  b.className = "chip" + (i === 0 ? " on" : "");
+  b.textContent = d.label;
+  if (i === 0) { b.style.borderColor = "var(--spark)"; b.style.color = "var(--spark)"; }
+  b.onclick = () => {
+    if (keepListening) return;
+    maxMin = d.min;
+    durChips.querySelectorAll(".chip").forEach((x, j) => {
+      const on = j === i;
+      x.classList.toggle("on", on);
+      x.style.borderColor = on ? "var(--spark)" : "var(--line)";
+      x.style.color = on ? "var(--spark)" : "var(--dim)";
+    });
+  };
+  durChips.appendChild(b);
+});
+
+const recBtn = document.getElementById("recBtn");
+const recStatus = document.getElementById("recStatus");
+const liveBox = document.getElementById("liveBox");
+const voiceText = document.getElementById("voiceText");
+const voiceActs = document.getElementById("voiceActs");
+
+document.getElementById("micBtn").onclick = () => {
+  if (!SR) {
+    document.getElementById("voiceUnsupported").style.display = "block";
+    document.getElementById("voiceBody").style.display = "none";
+  }
+  voiceModal.classList.add("open");
+};
+document.getElementById("voiceClose").onclick = () => { stopRec(); voiceModal.classList.remove("open"); };
+
+function startRec() {
+  finalText = voiceText.style.display === "block" ? voiceText.value : finalText; // 이어서 녹음
+  rec = new SR();
+  rec.lang = "ko-KR"; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const seg = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText = (finalText + " " + seg).trim();
+      else interim += seg;
+    }
+    document.getElementById("liveFinal").textContent = finalText;
+    document.getElementById("liveInterim").textContent = interim;
+    document.getElementById("livePlaceholder").style.display = (finalText || interim) ? "none" : "inline";
+  };
+  rec.onend = () => { if (keepListening) { try { rec.start(); } catch (e) { /* 다음 onend에서 재시도 */ } } };
+  rec.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      toast("마이크 권한을 허용해 주세요."); stopRec();
+    }
+  };
+  keepListening = true; recSec = 0;
+  document.getElementById("liveFinal").textContent = finalText;
+  document.getElementById("livePlaceholder").style.display = finalText ? "none" : "inline";
+  liveBox.style.display = "block"; voiceText.style.display = "none"; voiceActs.style.display = "none";
+  recBtn.textContent = "녹음 끝내기"; recBtn.style.background = "var(--danger)";
+  recStatus.style.display = "inline-flex";
+  try { rec.start(); } catch (e) { /* 이미 시작됨 */ }
+  recTimer = setInterval(() => {
+    recSec++;
+    const mm = String(Math.floor(recSec / 60)).padStart(2, "0");
+    const ss = String(recSec % 60).padStart(2, "0");
+    document.getElementById("recTime").textContent =
+      maxMin > 0 ? `${mm}:${ss} / ${String(maxMin).padStart(2, "0")}:00` : `${mm}:${ss} · 끝내기를 누를 때까지 계속 들어요`;
+    if (maxMin > 0 && recSec >= maxMin * 60) stopRec();
+  }, 1000);
+}
+function stopRec() {
+  if (!keepListening && !recTimer) return;
+  keepListening = false;
+  try { rec && rec.stop(); } catch (e) { /* 무시 */ }
+  clearInterval(recTimer); recTimer = null;
+  recBtn.textContent = finalText ? "이어서 녹음" : "녹음 시작";
+  recBtn.style.background = "var(--spark)";
+  recStatus.style.display = "none";
+  liveBox.style.display = "none";
+  voiceText.style.display = "block";
+  voiceText.value = finalText;
+  voiceActs.style.display = finalText.trim() ? "flex" : "none";
+}
+recBtn.onclick = () => { keepListening ? stopRec() : startRec(); };
+document.getElementById("insertVoice").onclick = () => {
+  const t = voiceText.value.trim();
+  if (!t) return;
+  const oneLine = t.replace(/\s+/g, " ");
+  if (oneLine.length <= 38) { titleInput.value = oneLine; bodyInput.value = ""; }
+  else { titleInput.value = oneLine.slice(0, 38) + "…"; bodyInput.value = t; }
+  finalText = ""; voiceText.value = "";
+  voiceModal.classList.remove("open");
+  recBtn.textContent = "녹음 시작";
+  titleInput.focus();
+  toast("받아쓴 내용을 입력창에 담았어요. 다듬은 뒤 '기록'을 눌러 저장하세요.");
+};
+
+/* ─── AI 유사 사례 + 차별점 분석 (Apps Script → Gemini 무료) ─── */
+async function analyzeIdea(id, btn) {
+  const i = ideas.find((x) => x.id === id); if (!i) return;
+  if (!CONFIG.SCRIPT_URL) { toast("시트 연결(설치가이드 ①~②)을 먼저 완료해 주세요."); return; }
+  const orig = btn.textContent;
+  btn.textContent = "🤖 웹에서 분석 중… (5~10초)"; btn.disabled = true;
+  try {
+    const res = await fetch(CONFIG.SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        token: PIN_HASH, action: "analyze",
+        idea: { title: i.title, body: i.body, category: i.category, tags: i.tags },
+      }),
+    });
+    const data = await res.json();
+    if (data.error === "no-key") {
+      toast("Gemini API 키가 아직 설정되지 않았어요. 설치가이드의 'AI 분석 켜기'를 참고하세요.");
+    } else if (data.error) {
+      toast("분석 중 오류: " + data.error);
+    } else {
+      i.analysis = data.analysis; i.analyzedAt = data.analyzedAt || now();
+      touch(i); // 저장 + 렌더 + 시트 동기화 (분석 결과도 시트에 남음)
+      return;
+    }
+  } catch (e) {
+    toast("분석 요청에 실패했어요. 연결 상태를 확인해 주세요.");
+  }
+  btn.textContent = orig; btn.disabled = false;
+}
+
+/* ─── 음성 인사 (부드러운 한국어 음성, 남성 우선) ─── */
+let greetOn = localStorage.getItem("inv-voice-greet") !== "off";
+let greeted = false;
+const soundBtn = document.getElementById("soundBtn");
+
+function refreshSoundBtn() {
+  soundBtn.textContent = greetOn ? "🔊" : "🔇";
+  soundBtn.style.opacity = greetOn ? "1" : "0.5";
+}
+soundBtn.onclick = () => {
+  greetOn = !greetOn;
+  localStorage.setItem("inv-voice-greet", greetOn ? "on" : "off");
+  refreshSoundBtn();
+  if (greetOn) speakKo("음성 인사를 켰어요.");
+  else window.speechSynthesis && speechSynthesis.cancel();
+};
+
+function pickVoice() {
+  const voices = speechSynthesis.getVoices().filter((v) => (v.lang || "").toLowerCase().startsWith("ko"));
+  if (!voices.length) return null;
+  // 남성 계열 이름 우선 (기기마다 보유 음성이 다름)
+  const male = voices.find((v) => /injoon|hyunsu|minsu|male|남성/i.test(v.name));
+  return male || voices[0];
+}
+function speakKo(text) {
+  if (!("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ko-KR";
+  const v = pickVoice();
+  if (v) u.voice = v;
+  u.rate = 0.98;   // 차분하게
+  u.pitch = 0.9;   // 살짝 낮게 — 부드럽고 스마트한 톤
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+function greetingText() {
+  const h = new Date().getHours();
+  const name = CONFIG.USER_NAME || "발명가";
+  const opening =
+    h < 6 ? `${name} 발명가님, 이 시간까지 아이디어가 떠오르셨군요.` :
+    h < 12 ? `좋은 아침이에요, ${name} 발명가님! 돌아오셨네요.` :
+    h < 18 ? `안녕하세요, ${name} 발명가님! 돌아오셨네요.` :
+    `좋은 저녁이에요, ${name} 발명가님.`;
+  const asks = [
+    "오늘은 어떤 아이디어를 기록해 볼까요?",
+    "머릿속의 발상, 사라지기 전에 남겨 볼까요?",
+    "새로운 발명 아이디어가 기다리고 있나요?",
+  ];
+  return `${opening} ${asks[Math.floor(Math.random() * asks.length)]}`;
+}
+function tryGreet() {
+  if (greeted || !greetOn || !("speechSynthesis" in window)) return;
+  greeted = true;
+  speakKo(greetingText());
+}
+// 음성 목록이 준비되는 대로 인사 시도. 자동재생이 막힌 기기(일부 휴대폰)는 첫 터치 때 인사.
+if ("speechSynthesis" in window) {
+  if (speechSynthesis.getVoices().length) setTimeout(tryGreet, 400);
+  else speechSynthesis.addEventListener("voiceschanged", () => setTimeout(tryGreet, 200), { once: true });
+  const gestureGreet = () => { setTimeout(tryGreet, 50); };
+  window.addEventListener("pointerdown", gestureGreet, { once: true });
+  window.addEventListener("keydown", gestureGreet, { once: true });
+  setTimeout(() => { greeted = true; }, 30000); // 열고 30초 지나면 인사 생략 (뒤늦은 터치에 갑자기 말하지 않도록)
+}
+refreshSoundBtn();
+
+/* ─── 토스트 ─── */
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.display = "none"; }, 2800);
+}
+
+/* ─── 파티클: 유영 입자 + 아이디어 별 + 저장 폭발 ─── */
+const pc = document.getElementById("particles");
+const pctx = pc.getContext("2d");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let drift = [], bursts = [], stars = [], mouse = { x: -999, y: -999 };
+
+function resizeParticles() {
+  pc.width = window.innerWidth; pc.height = window.innerHeight;
+  makeStars();
+}
+function makeStars() {
+  const n = Math.min(window.__starCount || 0, 120);
+  stars = Array.from({ length: n }, (_, i) => {
+    const seed = (i * 2654435761) % 4294967296;
+    return {
+      x: (((seed % 1000) / 1000) * 0.9 + 0.05) * pc.width,
+      y: ((((seed >> 10) % 1000) / 1000) * 0.85 + 0.05) * pc.height,
+      r: 1.4 + (i % 3) * 0.7,
+      phase: (i * 0.7) % (Math.PI * 2),
+    };
+  });
+}
+window.addEventListener("resize", resizeParticles);
+window.addEventListener("pointermove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+function burstAt(el) {
+  if (reducedMotion) return;
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 42; i++) {
+    const a = (Math.PI * 2 * i) / 42 + Math.random() * 0.4;
+    const sp = 1.5 + Math.random() * 4.5;
+    bursts.push({
+      x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.8,
+      life: 1, decay: 0.012 + Math.random() * 0.015,
+      r: 1 + Math.random() * 2.2, gold: Math.random() < 0.65,
+    });
+  }
+}
+function initDrift() {
+  const n = reducedMotion ? 0 : 64;
+  drift = Array.from({ length: n }, () => ({
+    x: Math.random() * pc.width, y: Math.random() * pc.height,
+    vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+    r: 0.8 + Math.random() * 1.6,
+  }));
+}
+let lastStarCount = -1;
+function tick() {
+  if ((window.__starCount || 0) !== lastStarCount) { lastStarCount = window.__starCount || 0; makeStars(); }
+  const w = pc.width, h = pc.height;
+  pctx.clearRect(0, 0, w, h);
+  const t = performance.now() / 1000;
+
+  for (const st of stars) {
+    const pulse = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(t * 1.4 + st.phase);
+    pctx.beginPath(); pctx.arc(st.x, st.y, st.r * pulse, 0, Math.PI * 2);
+    pctx.fillStyle = `rgba(255,194,77,${0.55 * pulse})`;
+    pctx.shadowColor = "#FFC24D"; pctx.shadowBlur = 8 * pulse;
+    pctx.fill(); pctx.shadowBlur = 0;
+  }
+  for (const p of drift) {
+    const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+    if (d2 < 9000 && d2 > 1) { const f = 22 / d2; p.vx += dx * f; p.vy += dy * f; }
+    p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx; p.y += p.vy;
+    if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
+    if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+    pctx.beginPath(); pctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    pctx.fillStyle = "rgba(124,137,245,0.5)"; pctx.fill();
+  }
+  pctx.lineWidth = 0.6;
+  for (let i = 0; i < drift.length; i++) {
+    for (let j = i + 1; j < drift.length; j++) {
+      const a = drift[i], b = drift[j];
+      const dx = a.x - b.x, dy = a.y - b.y, d = dx * dx + dy * dy;
+      if (d < 11000) {
+        pctx.strokeStyle = `rgba(124,137,245,${0.16 * (1 - d / 11000)})`;
+        pctx.beginPath(); pctx.moveTo(a.x, a.y); pctx.lineTo(b.x, b.y); pctx.stroke();
+      }
+    }
+  }
+  bursts = bursts.filter((b) => b.life > 0);
+  for (const b of bursts) {
+    b.x += b.vx; b.y += b.vy; b.vy += 0.05; b.vx *= 0.985; b.vy *= 0.985; b.life -= b.decay;
+    pctx.beginPath(); pctx.arc(b.x, b.y, b.r * b.life, 0, Math.PI * 2);
+    pctx.fillStyle = b.gold ? `rgba(255,194,77,${b.life})` : `rgba(124,137,245,${b.life})`;
+    pctx.fill();
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ─── 잠금화면: PIN → 해시 → 이 기기에만 저장 ───
+   저장소 코드에는 어떤 비밀번호도 들어있지 않습니다.
+   기기별로 한 번 입력하면 그 기기의 브라우저에만 해시값이 남고,
+   서버로는 원문이 아니라 해시값만 전송됩니다. */
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+const lockScreen = document.getElementById("lockScreen");
+const pinInput = document.getElementById("pinInput");
+const pinError = document.getElementById("pinError");
+
+function showLock(msg) {
+  if (msg) { pinError.textContent = msg; pinError.style.display = "block"; }
+  else { pinError.style.display = "none"; }
+  lockScreen.classList.remove("hidden");
+  pinInput.value = "";
+  setTimeout(() => pinInput.focus(), 50);
+}
+let appStarted = false;
+function startApp() {
+  lockScreen.classList.add("hidden");
+  if (appStarted) { scheduleSync(); return; } // 비밀번호만 다시 설정한 경우
+  appStarted = true;
+  loadLocal();
+  render();
+  resizeParticles();
+  initDrift();
+  tick();
+  titleInput.focus();
+  if (CONFIG.SCRIPT_URL) syncNow();
+  else setPill("", "시트 미연결 · 이 기기에만 저장 중");
+}
+document.getElementById("pinSubmit").onclick = async () => {
+  const v = pinInput.value.trim();
+  if (!v) { pinInput.focus(); return; }
+  PIN_HASH = await sha256Hex(v);
+  localStorage.setItem("inv-pin-hash", PIN_HASH);
+  startApp();
+};
+pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("pinSubmit").click(); });
+
+const savedHash = localStorage.getItem("inv-pin-hash");
+if (savedHash) {
+  PIN_HASH = savedHash;
+  startApp();
+} else {
+  showLock();
+}
+document.getElementById("changePinBtn").onclick = () => {
+  localStorage.removeItem("inv-pin-hash");
+  showLock("새 비밀번호를 입력하세요.");
+};
+</script>
+</body>
+</html>
