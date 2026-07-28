@@ -929,7 +929,7 @@ function toast(msg) {
 /* ─── 파티클: 유영 입자 + 아이디어 별 + 저장 폭발 ─── */
 const pc = document.getElementById("particles");
 const pctx = pc.getContext("2d");
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 let drift = [], bursts = [], stars = [], mouse = { x: -999, y: -999 };
 
 function resizeParticles() {
@@ -1022,8 +1022,22 @@ function tick() {
    기기별로 한 번 입력하면 그 기기의 브라우저에만 해시값이 남고,
    서버로는 원문이 아니라 해시값만 전송됩니다. */
 async function sha256Hex(text) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (window.crypto && window.crypto.subtle) {
+    try {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) { /* 일부 브라우저에서 막혀 있으면 아래 대체 방식으로 진행 */ }
+  }
+  // 대체 해시(일부 구형/제한된 브라우저에서 crypto.subtle이 없을 때)
+  // 이 앱은 저장소 코드에 비밀을 두지 않는 게 핵심이라, 이 경우도 안전하게 동작합니다.
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0") + "fallback";
 }
 const lockScreen = document.getElementById("lockScreen");
 const pinInput = document.getElementById("pinInput");
@@ -1053,9 +1067,19 @@ function startApp() {
 document.getElementById("pinSubmit").onclick = async () => {
   const v = pinInput.value.trim();
   if (!v) { pinInput.focus(); return; }
-  PIN_HASH = await sha256Hex(v);
-  localStorage.setItem("inv-pin-hash", PIN_HASH);
-  startApp();
+  const btn = document.getElementById("pinSubmit");
+  const orig = btn.textContent;
+  btn.textContent = "확인 중…"; btn.disabled = true;
+  try {
+    PIN_HASH = await sha256Hex(v);
+    localStorage.setItem("inv-pin-hash", PIN_HASH);
+    startApp();
+  } catch (err) {
+    pinError.textContent = "잠금 해제 중 오류가 났어요: " + (err && err.message ? err.message : err);
+    pinError.style.display = "block";
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
 };
 pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("pinSubmit").click(); });
 
