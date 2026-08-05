@@ -218,9 +218,9 @@
     <h1>발명 기록장</h1>
     <p class="sub">떠오른 순간, 사라지기 전에. 지금까지 붙잡은 발상 <b id="countEl">0</b>개가 배경의 별로 빛나고 있어요.</p>
     <button id="soundBtn" title="음성 인사 켜기/끄기" aria-label="음성 인사 켜기/끄기"
-      style="position: absolute; top: 0; right: 0; font-size: 20px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05);">🔊</button>
+      style="position: absolute; top: 0; right: 0; font-size: 20px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05);">🔊</button>
     <button id="changePinBtn" title="이 기기 비밀번호 변경"
-      style="position: absolute; top: 0; right: 46px; font-size: 15px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05); color: var(--dim);">🔒</button>
+      style="position: absolute; top: 0; right: 56px; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.05); color: var(--dim); opacity: 0.6;">🔒</button>
   </header>
 
   <!-- 기록: 제목 먼저, 상세는 그다음 -->
@@ -310,7 +310,10 @@
 <script>
 /* ═══════════════ ① 설정 — 설치가이드.md를 따라 두 값을 채우세요 ═══════════════ */
 const CONFIG = {
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzVbum4DhE2-yOH5n6dFN4rZRK6w1ozEHB6r8Q_XgZwUcHqvECR_aEYllGcJbYDeSwklA/exec",
+  // Apps Script 배포 후 받은 웹 앱 URL ("https://script.google.com/macros/s/.../exec")
+  // 이 URL은 비밀이 아니라 공개돼도 괜찮습니다 — 실제 잠금은 기기별로 입력하는 PIN이 맡습니다.
+  SCRIPT_URL: "",
+  // 음성 인사에서 부를 이름
   USER_NAME: "엘레나",
 };
 // ※ 비밀번호(PIN)는 이 파일에 절대 적지 않습니다.
@@ -874,42 +877,45 @@ function pickVoice() {
   const male = voices.find((v) => /injoon|hyunsu|minsu|male|남성/i.test(v.name));
   return male || voices[0];
 }
-function speakKo(text) {
+function speakKo(text, onStart) {
   if (!("speechSynthesis" in window)) return;
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "ko-KR";
   const v = pickVoice();
   if (v) u.voice = v;
-  u.rate = 0.98;   // 차분하게
-  u.pitch = 0.9;   // 살짝 낮게 — 부드럽고 스마트한 톤
+  u.rate = 0.95;   // 살짝 여유 있게
+  u.pitch = 1.0;   // 인위적으로 낮추면 오히려 기계음처럼 들려서 원래 음높이를 씁니다
+  if (onStart) u.onstart = onStart;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
 function greetingText() {
   const h = new Date().getHours();
   const name = CONFIG.USER_NAME || "발명가";
-  const opening =
-    h < 6 ? `${name} 발명가님, 이 시간까지 아이디어가 떠오르셨군요.` :
-    h < 12 ? `좋은 아침이에요, ${name} 발명가님! 돌아오셨네요.` :
-    h < 18 ? `안녕하세요, ${name} 발명가님! 돌아오셨네요.` :
-    `좋은 저녁이에요, ${name} 발명가님.`;
+  const openings =
+    h < 6 ? [`이 늦은 시간까지 안 주무시고, 뭔가 떠오르신 거예요, ${name}님?`, `${name}님, 이 시각까지 깨어 계시네요.`] :
+    h < 12 ? [`좋은 아침이에요, ${name}님. 오늘도 오셨네요.`, `안녕하세요, ${name}님. 아침부터 반가워요.`] :
+    h < 18 ? [`안녕하세요, ${name}님. 다시 오셨네요.`, `어서 오세요, ${name}님.`] :
+    [`오늘 하루 어떠셨어요, ${name}님.`, `${name}님, 하루 마무리 잘 하고 계신가요.`];
   const asks = [
-    "오늘은 어떤 아이디어를 기록해 볼까요?",
-    "머릿속의 발상, 사라지기 전에 남겨 볼까요?",
-    "새로운 발명 아이디어가 기다리고 있나요?",
+    "오늘은 어떤 생각이 떠오르셨어요?",
+    "머릿속에 있는 아이디어, 지금 남겨 볼까요?",
+    "새로 붙잡고 싶은 발상이 있으신가요?",
+    "오늘 떠오른 아이디어부터 적어 볼까요?",
   ];
-  return `${opening} ${asks[Math.floor(Math.random() * asks.length)]}`;
+  const opening = openings[Math.floor(Math.random() * openings.length)];
+  const ask = asks[Math.floor(Math.random() * asks.length)];
+  return `${opening} ${ask}`;
 }
 function tryGreet() {
   if (greeted || !greetOn || !("speechSynthesis" in window)) return;
-  greeted = true;
-  speakKo(greetingText());
+  speakKo(greetingText(), () => { greeted = true; }); // 실제로 소리가 시작된 순간에만 '인사 완료'로 기록
 }
 // 음성 목록이 준비되는 대로 인사 시도. 자동재생이 막힌 기기(일부 휴대폰)는 첫 터치 때 인사.
 if ("speechSynthesis" in window) {
   if (speechSynthesis.getVoices().length) setTimeout(tryGreet, 400);
   else speechSynthesis.addEventListener("voiceschanged", () => setTimeout(tryGreet, 200), { once: true });
-  const gestureGreet = () => { setTimeout(tryGreet, 50); };
+  const gestureGreet = () => { tryGreet(); }; // 지연 없이 터치 즉시 호출해야 휴대폰에서 재생 허가가 유지됩니다
   window.addEventListener("pointerdown", gestureGreet, { once: true });
   window.addEventListener("keydown", gestureGreet, { once: true });
   setTimeout(() => { greeted = true; }, 30000); // 열고 30초 지나면 인사 생략 (뒤늦은 터치에 갑자기 말하지 않도록)
@@ -1090,6 +1096,7 @@ if (savedHash) {
   showLock();
 }
 document.getElementById("changePinBtn").onclick = () => {
+  if (!confirm("이 기기에 저장된 비밀번호를 지우고 새로 설정할까요?\n(실수로 눌렀다면 '취소'를 누르세요)")) return;
   localStorage.removeItem("inv-pin-hash");
   showLock("새 비밀번호를 입력하세요.");
 };
